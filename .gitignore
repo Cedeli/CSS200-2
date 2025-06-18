@@ -1,0 +1,3 @@
+.venv
+.ipnyb_checkpoints
+data_preprocessed
