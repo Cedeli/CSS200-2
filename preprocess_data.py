@@ -35,12 +35,10 @@ def run_preprocessing():
     print("Starting data pre-processing...")
     for dataset_info in DATASETS:
         output_dir = os.path.join(PREPROCESSED_DATA_DIR, dataset_info["name"])
-        preprocess_single_dataset(dataset_info["img_dir"], dataset_info["ann_file"], output_dir)
+        preprocess_dataset(dataset_info["img_dir"], dataset_info["ann_file"], output_dir)
     print("All datasets have been pre-processed successfully!")
 
-def preprocess_single_dataset(img_dir, ann_file, output_dir):
-    """Processes a single dataset split."""
-    # Create output subdirectories
+def preprocess_dataset(img_dir, ann_file, output_dir):
     os.makedirs(os.path.join(output_dir, 'images'), exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'masks'), exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'targets'), exist_ok=True)
