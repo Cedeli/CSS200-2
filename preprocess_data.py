@@ -44,7 +44,7 @@ def gather_all_data():
 
     print(f"Found a total of {len(all_images)} images and {len(all_annotations)} annotations.")
     print(f"Master categories: {[cat['name'] for cat in master_categories]}")
-    return all_images, all_annotations, category_map
+    return all_images, all_annotations, category_map, master_categories
 
 def create_new_splits(all_images):
     image_ids = [img['id'] for img in all_images]
@@ -82,19 +82,28 @@ def generate_mask_and_targets(annotations, height, width, category_map):
     combined_mask = np.array(mask_img)
     return combined_mask, np.array(boxes, dtype=np.float32), np.array(labels, dtype=np.int64)
 
-def process_and_save_set(set_name, image_list, all_annotations, category_map):
+def save_coco_json(images, annotations, categories, file_path):
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    coco_format = {
+        "images": images,
+        "annotations": annotations,
+        "categories": categories
+    }
+    with open(file_path, 'w') as f:
+        json.dump(coco_format, f)
+    print(f"Saved new annotation file to {file_path}")
+
+def process_and_save_set(set_name, image_list, all_annotations, category_map, master_categories):
     output_dir = os.path.join(PREPROCESSED_DATA_DIR, set_name)
     os.makedirs(os.path.join(output_dir, 'images'), exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'masks'), exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'targets'), exist_ok=True)
 
     # Create a lookup dictionary for faster annotation access
-    anns_by_img_id = {}
+    anns_by_img_id = {img['id']: [] for img in image_list}
     for ann in all_annotations:
-        img_id = ann['image_id']
-        if img_id not in anns_by_img_id:
-            anns_by_img_id[img_id] = []
-        anns_by_img_id[img_id].append(ann)
+        if ann['image_id'] in anns_by_img_id:
+            anns_by_img_id[ann['image_id']].append(ann)
 
     print(f"\n--- Processing and saving '{set_name}' set ---")
     for img_info in tqdm(image_list, desc=f"Processing {set_name}"):
@@ -122,22 +131,26 @@ def process_and_save_set(set_name, image_list, all_annotations, category_map):
         target_path = os.path.join(output_dir, 'targets', target_filename)
         np.savez(target_path, boxes=boxes, labels=labels)
 
+    set_image_ids = {img['id'] for img in image_list}
+    set_annotations = [ann for ann in all_annotations if ann['image_id'] in set_image_ids]
+    ann_file_path = os.path.join(output_dir, '_annotations.coco.json')
+    save_coco_json(image_list, set_annotations, master_categories, ann_file_path)
+
 def run_full_preprocessing():
     if os.path.exists(PREPROCESSED_DATA_DIR):
         print(f"Pre-processed data directory '{PREPROCESSED_DATA_DIR}' already exists.")
         print("Delete the directory to re-run preprocessing.")
         return
 
-    all_images, all_annotations, category_map = gather_all_data()
+    all_images, all_annotations, category_map, master_categories = gather_all_data()
 
     train_imgs, val_imgs = create_new_splits(all_images)
     
-    process_and_save_set('train', train_imgs, all_annotations, category_map)
-    process_and_save_set('valid', val_imgs, all_annotations, category_map)
+    process_and_save_set('train', train_imgs, all_annotations, category_map, master_categories)
+    process_and_save_set('valid', val_imgs, all_annotations, category_map, master_categories)
 
     print("\n--- Preprocessing complete! ---")
     print(f"All data has been correctly split and saved to '{PREPROCESSED_DATA_DIR}'.")
-    print("You can now proceed with training.")
 
 if __name__ == "__main__":
     run_full_preprocessing()
