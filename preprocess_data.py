@@ -38,10 +38,32 @@ def run_full_preprocessing():
             continue
         with open(ann_file_path, 'r') as f:
             coco_data = json.load(f)
+
+        current_max_img_id = 0
+        if train_val_images_by_id:
+            current_max_img_id = max(train_val_images_by_id.keys())
+
+        current_max_ann_id = 0
+        if train_val_annotations:
+            current_max_ann_id = max(ann['id'] for ann in train_val_annotations)
+        
+        img_id_map = {}
         for img in coco_data.get('images', []):
+            old_id = img['id']
+            new_id = old_id + current_max_img_id + 1
+            img_id_map[old_id] = new_id
+            img['id'] = new_id
             img['source_path'] = os.path.join(ORIGINAL_DATA_DIR, dset_name, img['file_name'])
             train_val_images_by_id[img['id']] = img
-        train_val_annotations.extend(coco_data.get('annotations', []))
+
+        for ann in coco_data.get('annotations', []):
+            old_img_id = ann['image_id']
+            if old_img_id in img_id_map:
+                ann['image_id'] = img_id_map[old_img_id]
+            
+            ann['id'] += current_max_ann_id + 1
+            train_val_annotations.append(ann)
+
         for cat in coco_data.get('categories', []):
             all_categories_from_sources[cat['id']] = cat
 
