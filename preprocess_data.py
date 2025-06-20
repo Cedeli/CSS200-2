@@ -10,7 +10,7 @@ import datetime
 # --- CONFIGURATION ---
 ORIGINAL_DATA_DIR = "data"
 PREPROCESSED_DATA_DIR = "data_preprocessed"
-TRAIN_RATIO = 0.85
+TRAIN_RATIO = 0.80
 RANDOM_STATE = 42
 
 def run_full_preprocessing():
