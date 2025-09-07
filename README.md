@@ -1,4 +1,4 @@
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jMDvZDFU9gqg-WYowhEEgvoENXtso_ZR#scrollTo=kTIjuk_xndtu)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/17EUSOoYlHTeoPO_d7gys_cMsvxAU1v-w?usp=sharing)
 # Utilizing Mask-RCNN for Banana Ripeness Classification for Individual Bananas in Banana Bunches
 
 This repository contains the Google Colaboratory (Colab) notebook and associated resources for the model developed in the thesis paper titled: **"Utilizing Mask-RCNN for Banana Ripeness Classification for Individual Bananas in Banana Bunches"**.
